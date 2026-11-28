@@ -1,94 +1,65 @@
 # Modelo de datos
 
-El modelo previsto usa PostgreSQL con tres tablas relacionadas: usuarios, elementos del catálogo y reseñas. Su implementación en la base de datos está pendiente.
+El esquema implementado está en `src/database/schema.sql`. Se usa SQLite con claves foráneas activadas. El fichero se guarda fuera de `public/` y se excluye de Git.
 
 ## Tablas
 
-### users
+| Tabla      | Campos                                                                                | Restricciones                                             |
+| ---------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `users`    | id, username, email, password_hash, role, created_at                                  | Correo único sin distinguir mayúsculas; rol user o admin  |
+| `items`    | id, title, type, creator, year, description, minutes, session_label, mood, created_at | Cuatro formatos; cuatro planes; minutos de 5 a 600        |
+| `reviews`  | id, user_id, item_id, rating, comment, spoiler, created_at, updated_at                | Nota de 1 a 5; UNIQUE(user_id, item_id)                   |
+| `shelf`    | user_id, item_id, status, updated_at                                                  | Clave primaria compuesta; tres estados                    |
+| `sessions` | token_hash, user_id, csrf_token, expires_at                                           | Hash del token como clave; caducidad Unix en milisegundos |
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| id | serial, clave primaria | |
-| username | varchar(30) | único, obligatorio |
-| email | varchar(255) | único, obligatorio |
-| password_hash | varchar(100) | hash de la contraseña, nunca la contraseña en claro |
-| role | varchar(10) | `user` o `admin`; por defecto `user` |
-| created_at | timestamp | por defecto, la fecha actual |
+Los identificadores son enteros. Las fechas de creación y edición usan ISO 8601 en UTC. Las contraseñas se derivan con scrypt: una sal aleatoria de 16 bytes y una clave de 64 bytes. Se almacena `sal:clave` en hexadecimal.
 
-### items
+| Campo           | Valores                         |
+| --------------- | ------------------------------- |
+| items.type      | movie, book, series, game       |
+| items.mood      | pausa, curioso, ligero, intenso |
+| shelf.status    | pending, in_progress, finished  |
+| reviews.spoiler | 0, 1                            |
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| id | serial, clave primaria | |
-| title | varchar(200) | obligatorio |
-| type | varchar(20) | `movie`, `book`, `series`, `game` u `other` |
-| creator | varchar(200) | autor, director o estudio; obligatorio |
-| year | integer | opcional |
-| description | text | opcional |
-| created_at | timestamp | por defecto, la fecha actual |
-
-### reviews
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| id | serial, clave primaria | |
-| user_id | integer, clave foránea a users.id | borrado en cascada |
-| item_id | integer, clave foránea a items.id | borrado en cascada |
-| rating | smallint | entre 1 y 5 |
-| comment | text | obligatorio |
-| created_at | timestamp | fecha de creación |
-| updated_at | timestamp | fecha de la última edición |
+`minutes` expresa una sesión orientativa y `session_label` explica qué incluye. No representa el tiempo total de una novela o videojuego.
 
 ## Relaciones
-
-- Un usuario escribe muchas reseñas (relación 1 a N).
-- Un elemento del catálogo recibe muchas reseñas (relación 1 a N).
-- Restricción `UNIQUE (user_id, item_id)`: un usuario solo puede reseñar una vez cada elemento.
-- Al borrar un usuario o un elemento, se borran también sus reseñas.
-
-## Diagrama
 
 ```mermaid
 erDiagram
     users ||--o{ reviews : escribe
     items ||--o{ reviews : recibe
-
-    users {
-        serial id PK
-        varchar username UK
-        varchar email UK
-        varchar password_hash
-        varchar role
-        timestamp created_at
-    }
-
-    items {
-        serial id PK
-        varchar title
-        varchar type
-        varchar creator
-        integer year
-        text description
-        timestamp created_at
-    }
-
-    reviews {
-        serial id PK
-        integer user_id FK
-        integer item_id FK
-        smallint rating
-        text comment
-        timestamp created_at
-        timestamp updated_at
-    }
+    users ||--o{ shelf : organiza
+    items ||--o{ shelf : aparece
+    users ||--o{ sessions : inicia
 ```
 
-La restricción de unicidad de `reviews` corresponde a la pareja `(user_id, item_id)`.
+Reseñar y guardar son operaciones independientes. Escribir una reseña no modifica el estado en la estantería.
 
-## Roles y permisos
+Las claves foráneas usan `ON DELETE CASCADE`. Borrar una propuesta elimina sus reseñas y guardados; la interfaz pide confirmación. No existe una operación pública de borrado de usuarios.
 
-| Rol | Permisos |
-|---|---|
-| Visitante (sin sesión) | Ver el catálogo y leer las reseñas |
-| user | Lo anterior, y escribir, editar y borrar sus propias reseñas |
-| admin | Lo anterior, y gestionar el catálogo, borrar cualquier reseña y cambiar roles |
+La media se calcula con `AVG(reviews.rating)` y el contador con `COUNT`. Sin reseñas, la media es `null` y el contador `0`.
+
+## Sesiones
+
+El navegador recibe un token aleatorio de 32 bytes en una cookie HttpOnly y SameSite=Lax. SQLite guarda su hash SHA-256, un token CSRF independiente y una caducidad a siete días. El logout borra la fila y limpia la cookie. Las sesiones caducadas se limpian al abrir la base de datos y al crear una sesión nueva.
+
+## Permisos
+
+| Operación                    | Visitante | Usuario           | Administrador     |
+| ---------------------------- | --------- | ----------------- | ----------------- |
+| Consultar catálogo y reseñas | Sí        | Sí                | Sí                |
+| Gestionar estantería         | No        | Solo la propia    | Solo la propia    |
+| Crear reseña                 | No        | Una por propuesta | Una por propuesta |
+| Editar reseña                | No        | Solo la propia    | Solo la propia    |
+| Eliminar reseña              | No        | Solo la propia    | Cualquiera        |
+| Gestionar catálogo           | No        | No                | Sí                |
+| Cambiar roles desde la API   | No        | No                | No                |
+
+El administrador se prepara mediante un script local. Ocultar botones no sustituye la comprobación del servidor.
+
+## Inicialización
+
+El primer arranque crea las tablas y carga las 16 fichas de `src/database/seed.js`. `PRAGMA user_version=1` evita repetir esa carga cuando se reinicia un catálogo vacío. Un cambio futuro de esquema necesitará una migración explícita; `CREATE TABLE IF NOT EXISTS` no actualiza tablas existentes.
+
+Se usa WAL y una espera de cinco segundos para bloqueos breves. La configuración está pensada para una instancia del servidor y la escala de la práctica.

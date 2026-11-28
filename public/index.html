@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#243fba" />
+    <meta
+      name="description"
+      content="Encuentra qué ver, leer o jugar según el rato que tienes. Guarda tus pendientes y comparte tu reseña en Entretiempo."
+    />
+    <title>Entretiempo · Un rato para una buena historia</title>
+    <link rel="icon" href="/assets/mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" type="module"></script>
+  </head>
+  <body>
+    <a href="#catalogue" class="skip-link">Saltar a las propuestas</a>
+    <header class="site-header">
+      <a class="brand" href="#explorar" aria-label="Entretiempo, inicio"
+        ><img
+          src="/assets/mark.svg"
+          width="30"
+          height="30"
+          alt=""
+        />entretiempo<span class="brand-dot">.</span></a
+      >
+      <nav aria-label="Principal">
+        <a class="nav-link active" href="#explorar" data-view="explore"
+          >Explorar</a
+        >
+        <a class="nav-link" href="#estanteria" data-view="shelf"
+          >Mi estantería
+          <span id="shelf-count" class="nav-count" hidden>0</span></a
+        >
+        <a
+          class="nav-link"
+          href="#gestion"
+          data-view="admin"
+          id="admin-link"
+          hidden
+          >Gestión</a
+        >
+      </nav>
+      <div id="account" class="account">
+        <button class="button button-small button-blue" id="open-login">
+          Entrar / Registrarme
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div id="explore-view">
+        <section class="hero container" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow">
+              <span class="little-sun" aria-hidden="true">✳</span> UN RATO PARA
+              TI
+            </p>
+            <h1 id="hero-title">
+              Tu próximo rato,<br /><em>bien elegido.</em>
+            </h1>
+            <p class="hero-description">
+              Historias que caben en tu día. Encuentra qué ver, leer o jugar
+              según el tiempo que tienes y lo que te apetece.
+            </p>
+            <div class="hero-actions">
+              <a href="#catalogue" class="button button-orange"
+                >Encontrar mi próximo plan</a
+              ><button class="text-button" id="surprise">
+                Sorpréndeme <span aria-hidden="true">✳</span>
+              </button>
+            </div>
+            <p class="hero-footnote">
+              Menos tiempo buscando. Más tiempo disfrutando.
+            </p>
+          </div>
+          <div
+            class="hero-scene"
+            aria-label="Una selección de historias"
+            id="hero-scene"
+          >
+            <div class="scene-orbit" aria-hidden="true"></div>
+            <span class="scene-note"
+              >LA MEJOR PARTE<br />DEL DÍA PUEDE SER ESTA.</span
+            >
+            <div id="featured-covers" class="featured-covers"></div>
+            <div class="time-seal" aria-hidden="true">
+              <span>hazte</span><strong>un rato</strong
+              ><span>te viene bien</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="plan-strip" aria-labelledby="plan-title">
+          <div class="container plan-inner">
+            <div>
+              <p class="eyebrow">EMPECEMOS POR LO FÁCIL</p>
+              <h2 id="plan-title">¿Qué plan te encaja hoy?</h2>
+            </div>
+            <form id="plan-filter" class="plan-controls">
+              <label
+                >Hoy tengo<select id="time-filter" name="maxMinutes">
+                  <option value="">Todo el tiempo del mundo</option>
+                  <option value="25">Hasta 25 minutos</option>
+                  <option value="30">Hasta 30 minutos</option>
+                  <option value="60">Hasta una hora</option>
+                  <option value="120">Hasta dos horas</option>
+                </select></label
+              >
+              <label
+                >Me apetece<select id="mood-filter" name="mood">
+                  <option value="">Un poco de todo</option>
+                  <option value="pausa">Bajar el ritmo</option>
+                  <option value="ligero">Algo ligero</option>
+                  <option value="curioso">Descubrir algo</option>
+                  <option value="intenso">Sentirlo todo</option>
+                </select></label
+              >
+            </form>
+          </div>
+        </section>
+
+        <section
+          class="catalogue container"
+          id="catalogue"
+          aria-labelledby="catalogue-title"
+        >
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">FUERA DEL PILOTO AUTOMÁTICO</p>
+              <h2 id="catalogue-title">
+                Una historia para cada rato<span>.</span>
+              </h2>
+            </div>
+            <p>Una pequeña selección.<br />Muchas formas de desconectar.</p>
+          </div>
+          <div class="catalogue-toolbar">
+            <div
+              class="format-tabs"
+              role="group"
+              aria-label="Filtrar por formato"
+            >
+              <button
+                class="format-tab active"
+                data-type=""
+                aria-pressed="true"
+              >
+                Todo</button
+              ><button
+                class="format-tab"
+                data-type="movie"
+                aria-pressed="false"
+              >
+                Cine</button
+              ><button class="format-tab" data-type="book" aria-pressed="false">
+                Libros</button
+              ><button
+                class="format-tab"
+                data-type="series"
+                aria-pressed="false"
+              >
+                Series</button
+              ><button class="format-tab" data-type="game" aria-pressed="false">
+                Juegos
+              </button>
+            </div>
+            <label class="search-field"
+              ><span class="sr-only">Buscar por título o autoría</span
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 5 5" /></svg
+              ><input
+                id="search"
+                type="search"
+                placeholder="Un título, un nombre..."
+                maxlength="80"
+            /></label>
+          </div>
+          <div class="results-bar">
+            <p id="results-status" role="status">Cargando propuestas…</p>
+            <div class="results-options">
+              <button id="reset-filters" class="text-button" hidden>
+                Limpiar filtros</button
+              ><label class="sort-label"
+                >Ordenar<select id="sort-filter">
+                  <option value="selection">Nuestra selección</option>
+                  <option value="rating">Mejor valoradas</option>
+                  <option value="short">Menos tiempo</option>
+                </select></label
+              >
+            </div>
+          </div>
+          <div id="catalogue-grid" class="card-grid" aria-busy="true"></div>
+          <p class="time-note">
+            El tiempo indica una sesión orientativa: la película completa, un
+            episodio, un rato de lectura o una sesión de juego. No es la
+            duración total de un libro, serie o videojuego.
+          </p>
+        </section>
+        <section class="closing-note container">
+          <span class="closing-symbol" aria-hidden="true">✳</span>
+          <p>No tienes que verlo todo.<br /><em>Solo encontrar lo tuyo.</em></p>
+          <span class="closing-small"
+            >GUARDA LO QUE TE LLAME.<br />VUELVE CUANDO TENGAS UN RATO.</span
+          >
+        </section>
+      </div>
+
+      <section
+        id="shelf-view"
+        class="container personal-view"
+        hidden
+        aria-labelledby="shelf-title"
+      >
+        <p class="eyebrow">A TU RITMO</p>
+        <div class="section-heading">
+          <div>
+            <h1 id="shelf-title">Mi estantería<span>.</span></h1>
+            <p>
+              Lo que te llama, lo que disfrutas y lo que ya se queda contigo.
+            </p>
+          </div>
+          <a class="button button-outline" href="#explorar"
+            >Seguir explorando</a
+          >
+        </div>
+        <div
+          class="shelf-tabs"
+          role="group"
+          aria-label="Estado de las propuestas"
+        >
+          <button class="format-tab active" data-status="" aria-pressed="true">
+            Todo</button
+          ><button
+            class="format-tab"
+            data-status="pending"
+            aria-pressed="false"
+          >
+            Pendientes <span id="pending-count">0</span></button
+          ><button
+            class="format-tab"
+            data-status="in_progress"
+            aria-pressed="false"
+          >
+            En curso <span id="progress-count">0</span></button
+          ><button
+            class="format-tab"
+            data-status="finished"
+            aria-pressed="false"
+          >
+            Terminadas <span id="finished-count">0</span>
+          </button>
+        </div>
+        <p id="shelf-status" role="status"></p>
+        <div id="shelf-grid" class="card-grid"></div>
+      </section>
+
+      <section
+        id="admin-view"
+        class="container personal-view"
+        hidden
+        aria-labelledby="admin-title"
+      >
+        <p class="eyebrow">CUIDAR LA SELECCIÓN</p>
+        <div class="section-heading">
+          <div>
+            <h1 id="admin-title">El catálogo<span>.</span></h1>
+            <p>
+              Añade propuestas, actualiza las fichas y modera reseñas desde su
+              detalle.
+            </p>
+          </div>
+        </div>
+        <div class="admin-layout">
+          <form id="item-form" class="panel">
+            <h2 id="item-form-title">Nueva propuesta</h2>
+            <input name="id" type="hidden" /><label
+              >Título<input name="title" required maxlength="150" /></label
+            ><label
+              >Autoría / dirección / estudio<input
+                name="creator"
+                required
+                maxlength="120"
+            /></label>
+            <div class="form-row">
+              <label
+                >Formato<select name="type">
+                  <option value="movie">Cine</option>
+                  <option value="book">Libro</option>
+                  <option value="series">Serie</option>
+                  <option value="game">Videojuego</option>
+                </select></label
+              ><label
+                >Año<input
+                  name="year"
+                  type="number"
+                  min="1800"
+                  max="2100"
+                  required
+              /></label>
+            </div>
+            <div class="form-row">
+              <label
+                >Minutos por sesión<input
+                  name="minutes"
+                  type="number"
+                  min="5"
+                  max="600"
+                  required /></label
+              ><label
+                >Plan<select name="mood">
+                  <option value="pausa">Bajar el ritmo</option>
+                  <option value="ligero">Algo ligero</option>
+                  <option value="curioso">Descubrir algo</option>
+                  <option value="intenso">Sentirlo todo</option>
+                </select></label
+              >
+            </div>
+            <label
+              >Qué incluye ese rato<input
+                name="session_label"
+                placeholder="Por ejemplo: un episodio orientativo"
+                maxlength="60"
+                required /></label
+            ><label
+              >Descripción<textarea
+                name="description"
+                minlength="10"
+                maxlength="800"
+                rows="4"
+                required
+              ></textarea>
+            </label>
+            <p class="form-status" role="status"></p>
+            <div class="form-actions">
+              <button class="button button-blue" type="submit">
+                Guardar propuesta</button
+              ><button
+                class="text-button"
+                type="button"
+                id="cancel-edit"
+                hidden
+              >
+                Cancelar edición
+              </button>
+            </div>
+          </form>
+          <div class="panel admin-list">
+            <h2>Propuestas publicadas</h2>
+            <p id="admin-status" role="status"></p>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Formato</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-items"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer container">
+      <a class="brand" href="#explorar">entretiempo.</a>
+      <p>Cine, libros, series y juegos.<br />El rato lo pones tú.</p>
+      <span>HECHO PARA DISFRUTAR SIN PRISA.</span>
+    </footer>
+
+    <dialog id="auth-dialog" class="auth-dialog">
+      <button class="close-button" type="button" data-close aria-label="Cerrar">
+        ×
+      </button>
+      <p class="eyebrow">TU PRÓXIMA BUENA COSTUMBRE</p>
+      <h2 id="auth-title">Qué bien verte por aquí.</h2>
+      <p id="auth-description">
+        Entra para guardar tus próximos planes y compartir lo que te han
+        parecido.
+      </p>
+      <form id="auth-form">
+        <label id="username-label" hidden
+          >Cómo te llamas<input
+            name="username"
+            autocomplete="nickname"
+            minlength="3"
+            maxlength="30" /></label
+        ><label
+          >Correo electrónico<input
+            name="email"
+            type="email"
+            autocomplete="email"
+            maxlength="254"
+            required /></label
+        ><label
+          >Contraseña<input
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            minlength="10"
+            maxlength="128"
+            required
+          /><small>Entre 10 y 128 caracteres.</small></label
+        >
+        <p class="form-status" role="alert"></p>
+        <button
+          class="button button-blue full-width"
+          type="submit"
+          id="auth-submit"
+        >
+          Entrar
+        </button>
+      </form>
+      <p class="auth-switch">
+        <span id="auth-switch-text">¿Primera vez?</span>
+        <button class="text-button" id="auth-switch">Crear una cuenta</button>
+      </p>
+    </dialog>
+    <dialog
+      id="item-dialog"
+      class="item-dialog"
+      aria-label="Detalle de la propuesta"
+    >
+      <button class="close-button" type="button" data-close aria-label="Cerrar">
+        ×
+      </button>
+      <div id="item-detail"></div>
+    </dialog>
+    <dialog
+      id="confirm-dialog"
+      class="confirm-dialog"
+      aria-labelledby="confirm-title"
+    >
+      <h2 id="confirm-title">¿Eliminar este contenido?</h2>
+      <p id="confirm-message"></p>
+      <div class="form-actions">
+        <button class="button button-outline" type="button" data-close>
+          Cancelar</button
+        ><button class="button button-danger" id="confirm-action" type="button">
+          Eliminar
+        </button>
+      </div>
+      <p class="form-status" role="alert"></p>
+    </dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <noscript
+      ><p class="noscript">
+        Activa JavaScript para consultar el catálogo y usar tu estantería.
+      </p></noscript
+    >
+  </body>
+</html>
